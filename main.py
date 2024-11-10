@@ -1,15 +1,14 @@
-import os  # Para ver archivos en directorios
-import librosa  # Para abrir archivos de audio
-import sounddevice as sd  # Para grabar archivos de audio
-from scipy.io.wavfile import write  # Para escribir archivos de audio
-from knn import knn, mostrarDatos  # Para algoritmo Knn y mostrar de datos
-from manejoArchivos import guardarUltimaFila, moverAudio  # Para mover archivos y escribir en csv
+import os                                                       # Para ver archivos en directorios
+import librosa                                                  # Para abrir archivos de audio
+import sounddevice as sd                                        # Para grabar archivos de audio
+from scipy.io.wavfile import write                              # Para escribir archivos de audio
+from knn import knn, mostrarDatos                               # Para algoritmo Knn y mostrar de datos
+from manejoArchivos import guardarUltimaFila, moverAudio        # Para mover archivos y escribir en csv
 
 
 def grabarAudio():
     seguir = input("Presione ENTER para grabar...")
-    buffer = sd.rec(int(1.5 * 48000), samplerate=48000,
-                    channels=1)  # Para eliminar curva rara al encender microfono para grabar
+    buffer = sd.rec(int(1.5 * 48000), samplerate=48000, channels=1)  # Para eliminar curva rara al encender microfono para grabar
     sd.wait()
 
     print("Grabando...")
