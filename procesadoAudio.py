@@ -1,18 +1,16 @@
-import librosa
-import numpy as np
-import csv
-import os
-import soundfile as sf
-import matplotlib.pyplot as plt
+import librosa                                              # Para procesado de audios
+import numpy as np                                          # Para manejo de arrays
+import os                                                   # Para ver archivos en directorios
+import matplotlib.pyplot as plt                             # Para graficar nube de puntos
 import matplotlib
-from manejoArchivos import guardar, guardarCSV, leerCSV
+from manejoArchivos import guardarCSV, leerCSV              # Para escribir en archivos csv
 
-np.set_printoptions(suppress=True)
+np.set_printoptions(suppress=True)  # Para que numpy no use notación científica
 
-matplotlib.use('TkAgg')
+matplotlib.use('TkAgg')             # Para que matplotlib haga gráficos en ventana aparte
 
+# Número de caracteristicas MFCC
 nroMfccs = 13
-k = 1
 
 def normalizar(audio):
     normalizado = librosa.util.normalize(audio)
@@ -23,6 +21,7 @@ def eliminarSilencios(audio):
     return sinSilencio
 
 def filtrarAudio(audio, coef_preenfasis):
+    audio = np.squeeze(audio) # Para transformar matriz columna (N, 1) en vector (N,)
     filtrado = librosa.effects.preemphasis(audio, coef=coef_preenfasis)
     return filtrado
 
@@ -40,9 +39,8 @@ def conservarMayorAmplitud(audio, nSegmentos):
 
     return yProcesado
 
-def procesarAudio(rutaAudio, nSegmentos=100, coef_preenfasis=0.99):
+def procesarAudio(y, nSegmentos=100, coef_preenfasis=0.99):
     # Cargar y normalizar el audio
-    y, sr = librosa.load(rutaAudio, sr=None)
     yNormalizado = normalizar(y)
 
     # Eliminar silencios en los bordes de la pista
@@ -57,28 +55,20 @@ def procesarAudio(rutaAudio, nSegmentos=100, coef_preenfasis=0.99):
     return np.array(yFinal)
 
 def extraerMfcc(audio, sr = 48000, n_mfcc=nroMfccs, n_fft=1024, hop_length=512):
-    # Subdivido en segmentos
-    duracionSegmento = len(audio) // k
-    mfccs = []
+    # Cálculo de los MFCCs a lo largo del tiempo
+    mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=n_mfcc, n_fft=n_fft, hop_length=hop_length)
 
-    for i in range(k):
-        inicio = i * duracionSegmento
-        fin = inicio + duracionSegmento
-        segmentos = audio[inicio:fin]
-
-        mfcc = librosa.feature.mfcc(y=segmentos, sr=sr, n_mfcc=n_mfcc, n_fft=n_fft, hop_length=hop_length)
-
-        # Calcular la media de los MFCC a lo largo del tiempo (opcional)
-        mfccsMedia = np.mean(mfcc, axis=1).round(1)
-        mfccs.extend(mfccsMedia)
-
-    mfccs = np.array(mfccs)
+    # Calcular la media de los MFCC a lo largo del tiempo
+    mfccs = np.mean(mfcc, axis=1).round(1)
 
     return mfccs
 
 def extraerZCR(audio):
+    # Cálculo de ZCRs en segmentos del audio
     zcrs = librosa.feature.zero_crossing_rate(audio)
-    return zcrs
+    # Cálculo de ZCR promedio
+    zcr = np.mean(zcrs, axis=1).round(5)
+    return zcr
 
 #----------------------------------------------------------------------------------------------------------------------#
 
@@ -93,17 +83,17 @@ def procesarBaseDatosAudios():
 
     etiqueta = np.empty((0, 1))
     nombre = np.empty((0, 1))
-    mfccs = np.empty((0, nroMfccs * k))
+    mfccs = np.empty((0, nroMfccs))
     zcr = np.empty((0, 1))
 
     for i in range(len(vegetales)):
-        elementos = os.listdir('Audios/' + vegetales[i] + '/')
+        elementos = [f for f in os.listdir('Audios/' + vegetales[i] + '/') if not f.startswith('.')]
         elementos = sorted(elementos, key=lambda x: int(x.split(vegetales[i])[-1].split('.')[0]))
 
         for j in range(len(elementos)):
             actual = procesarAudio('Audios/' + vegetales[i] + '/' + elementos[j])
             mfccs = np.vstack((mfccs, extraerMfcc(actual)))
-            zcr = np.vstack((zcr, np.mean(extraerZCR(actual), axis=1).round(5) * 10))
+            zcr = np.vstack((zcr, extraerZCR(actual) * 10))
             etiqueta = np.vstack((etiqueta, np.array(i)))
             nombre = np.vstack((nombre, np.array(vegetales[i]+str(j))))
 
@@ -113,26 +103,36 @@ def procesarBaseDatosAudios():
     caracteristicas = np.append(caracteristicas, nombre, axis=1)
     guardarCSV(caracteristicas)
 
-def procesarNuevo(ruta):
-    aProcesar = procesarAudio(ruta)
-    mfcc = extraerMfcc(aProcesar)
-    zcr = np.mean(extraerZCR(aProcesar), axis=1).round(5) * 10
+def procesarNuevo(audio):
+    procesado = procesarAudio(audio)
+
+    mfcc = extraerMfcc(procesado)
+    zcr = extraerZCR(procesado) * 10
+
     caracteristicas = np.array([mfcc[4], mfcc[5], zcr[0]])
 
     return caracteristicas
 
-def mostrarDatos():
+def mostrarDatos(nuevo = False, xn = 0, yn = 0, zn = 0, etiquetaN = 4.0, nombreN = 'nombre'):
     x, y, z, etiqueta, nombre = leerCSV('Resultados/Audios/Puntos.csv')
+    if nuevo:
+        x.append(xn)
+        y.append(yn)
+        z.append(zn)
+        etiqueta.append(etiquetaN)
+        nombre.append(nombreN)
 
-    colores = {0: 'violet', 1: 'red', 2: 'brown', 3: 'orange'}
+    colores = {0: 'violet', 1: 'red', 2: 'brown', 3: 'orange', 4: 'blue'}
     coloresPuntos = [colores[e] for e in etiqueta]
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    scatter = ax.scatter(x, y, z, c=coloresPuntos, cmap='inferno')
+    scatter = ax.scatter(x, y, z, c=coloresPuntos)
 
+    """ DESCOMENTAR PARA MOSTRAR LOS NOMBRES DEL ARCHIVO QUE CORRESPONDE A CADA PUNTO
     for i, name in enumerate(nombre):
         ax.text(x[i], y[i], z[i], name, fontsize=9, color='black')
+    """
 
     ax.set_xlabel('5to mfcc')
     ax.set_ylabel('6to mfcc')

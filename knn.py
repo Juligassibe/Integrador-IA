@@ -1,10 +1,10 @@
-import csv
+import librosa
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 import math
 from manejoArchivos import leerCSV
-from procesadoAudio import procesarNuevo
+from procesadoAudio import procesarNuevo, mostrarDatos
 
 np.set_printoptions(suppress=True)
 matplotlib.use('TkAgg')
@@ -14,33 +14,19 @@ nroVecinos = 5
 def calculoDistancia(xn, yn, zn, x, y, z):
     return math.sqrt((xn-x)**2 + (yn-y)**2 + (zn-z)**2)
 
-def mostrarDatos(x, y, z, etiqueta, nombre):
-    colores = {0: 'violet', 1: 'red', 2: 'brown', 3: 'orange', 4: 'blue'}
-    coloresPuntos = [colores[e] for e in etiqueta]
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    scatter = ax.scatter(x, y, z, c=coloresPuntos, cmap='inferno')
-
-    for i, name in enumerate(nombre):
-        ax.text(x[i], y[i], z[i], name, fontsize=9, color='black')
-
-    ax.set_xlabel('5to mfcc')
-    ax.set_ylabel('6to mfcc')
-    ax.set_zlabel('zcr promedio')
-
-    plt.show()
-
-def knn():
+def knn(audioNuevo):
     x, y, z, etiqueta, nombre = leerCSV('Resultados/Audios/Puntos.csv')
-    posicionNuevo = procesarNuevo('Temp/Audios/clasificar.wav')
+    print("Procesando audio...")
+    posicionNuevo = procesarNuevo(audioNuevo)
 
+    print("Calculando distancias...")
     distancias = np.empty((0, 1))
     for i in range(len(x)):
         distancias = np.vstack((distancias, calculoDistancia(posicionNuevo[0], posicionNuevo[1], posicionNuevo[2], x[i], y[i], z[i])))
 
     distancias = np.column_stack((distancias, np.array(etiqueta)))
     ordenados = distancias[np.argsort(distancias[:, 0])]
+
     contador = [0, 0, 0, 0]
 
     for i in range(nroVecinos):
@@ -54,6 +40,7 @@ def knn():
             contador[3]+= 1
 
     indice = contador.index(max(contador))
+
     if indice == 0:
         return 'berenjena', posicionNuevo
     elif indice == 1:
@@ -64,8 +51,11 @@ def knn():
         return 'zanahoria', posicionNuevo
 
 def main():
-    prediccion = knn()
-    return prediccion
+    y, sr = librosa.load('Temp/Audios/clasificar.wav', sr=None)
+    prediccion, coordenadas = knn(y)
+    print(f"El audio dice: {prediccion}")
+    mostrarDatos(coordenadas[0], coordenadas[1], coordenadas[2])
+
 
 if __name__ == '__main__':
     main()
