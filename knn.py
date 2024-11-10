@@ -4,7 +4,7 @@ import matplotlib
 import math
 from manejoArchivos import leerCSV
 from procesadoAudio import procesarNuevo, mostrarDatos
-
+print("hola")
 np.set_printoptions(suppress=True)
 matplotlib.use('TkAgg')
 
