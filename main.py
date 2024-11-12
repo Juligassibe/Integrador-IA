@@ -2,9 +2,9 @@ import os                                                       # Para ver archi
 import librosa                                                  # Para abrir archivos de audio
 import sounddevice as sd                                        # Para grabar archivos de audio
 from scipy.io.wavfile import write                              # Para escribir archivos de audio
-from knn import knn, mostrarDatos                               # Para algoritmo Knn y mostrar de datos
+from knn import knn                                             # Para algoritmo Knn y mostrar de datos
 from manejoArchivos import guardarUltimaFila, moverAudio        # Para mover archivos y escribir en csv
-
+from graficar import mostrarDatos
 
 def grabarAudio():
     seguir = input("Presione ENTER para grabar...")
@@ -54,17 +54,17 @@ def agregarBaseDatosAudios():
         else:
             nuevo = [coordenadas[0], coordenadas[1], coordenadas[2], 3.0, nombre]
 
-        guardarUltimaFila(nuevo)
+        guardarUltimaFila(nuevo, 'Resultados/Audios/Puntos.csv')
         print(f"Agregado {nombre}.wav a la base de datos")
 
         if opcion == "1":
             write(f"Audios/{prediccion}/{nombre}.wav", 48000, audioNuevo)
         elif opcion == "2":
             moverAudio(prediccion, f"{nombre}.wav")
-        mostrarDatos()
+        mostrarDatos('Resultados/Audios/Puntos.csv')
         return
 
-    print("Predicción incorrecta, descartando audio...")
+    print("Predicción incorrecta, audio descartado...")
 
 
 def main():
@@ -91,7 +91,7 @@ def main():
             prediccion, coordenadas = knn(audio)
 
             print(f"La predicción es: {prediccion}")
-            mostrarDatos(True, coordenadas[0], coordenadas[1], coordenadas[2], 4.0, 'nuevo')
+            mostrarDatos('Resultados/Audios/Puntos.csv', True, coordenadas[0], coordenadas[1], coordenadas[2], 4.0, 'nuevo')
 
         elif opcion == "4":
             break

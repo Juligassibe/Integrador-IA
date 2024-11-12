@@ -1,12 +1,12 @@
-import librosa
-import numpy as np
-import matplotlib
-import math
-from manejoArchivos import leerCSV
-from procesadoAudio import procesarNuevo, mostrarDatos
+import librosa                                              # Para abrir audios
+import numpy as np                                          # Para manejo de vectores
+import matplotlib                                           # Para graficar
+import math                                                 # Para sqrt()
+from manejoArchivos import leerCSV                          # Realizar lectura de datos en archivos csv
+from procesadoAudio import procesarNuevo, mostrarDatos      # Para procesar audios y mostrar nubes de puntos
+from graficar import mostrarDatos
 
-np.set_printoptions(suppress=True)
-matplotlib.use('TkAgg')
+np.set_printoptions(suppress=True)  # Para que numpy no use notación científica
 
 nroVecinos = 5
 
@@ -53,7 +53,7 @@ def main():
     y, sr = librosa.load('Temp/Audios/clasificar.wav', sr=None)
     prediccion, coordenadas = knn(y)
     print(f"El audio dice: {prediccion}")
-    mostrarDatos(coordenadas[0], coordenadas[1], coordenadas[2])
+    mostrarDatos('Resultados/Audios/Puntos.csv', True, coordenadas[0], coordenadas[1], coordenadas[2])
 
 
 if __name__ == '__main__':
