@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 from manejoArchivos import guardarCSV
-from graficar import mostrarDatos
+from graficar import mostrarDatosAudios
 
 def procesadoImagen(imagenGris):
     # Ajustar el contraste y el brillo de la imagen en escala de grises
@@ -85,9 +85,9 @@ def colorMedio(ruta):
 
     return np.array(mean_color[:3]).round(2)
 
-if __name__ == "__main__":
+def procesarBaseDatosImagenes():
     vegetales = ['berenjena', 'camote', 'papa', 'zanahoria']
-    medio = np.empty((0, 5))
+    medio = np.empty((0, 3))
 
     for i in range(len(vegetales)):
         ruta = f"Imagenes/{vegetales[i]}/"
@@ -97,9 +97,12 @@ if __name__ == "__main__":
 
         for j in range(len(lista)):
             temp = colorMedio(f"{ruta}{lista[j]}")
-            temp = np.append(temp, i)
-            temp = np.append(temp, lista[j])
+            #temp = np.append(temp, i)
+            #temp = np.append(temp, lista[j])
             medio = np.vstack((medio, temp))
 
     guardarCSV(medio, 'Resultados/Imagenes/puntos imagenes.csv')
-    mostrarDatos('Resultados/Imagenes/puntos imagenes.csv')
+    #mostrarDatosAudios('Resultados/Imagenes/puntos imagenes.csv')
+
+if __name__ == "__main__":
+    procesarBaseDatosImagenes()

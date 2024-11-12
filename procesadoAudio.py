@@ -1,8 +1,9 @@
-import librosa                                              # Para procesado de audios
-import numpy as np                                          # Para manejo de arrays
-import os                                                   # Para ver archivos en directorios
-from manejoArchivos import guardarCSV, leerCSV              # Para escribir en archivos csv
-from graficar import mostrarDatos
+import librosa                                                          # Para procesado de audios
+import numpy as np                                                      # Para manejo de arrays
+import os                                                               # Para ver archivos en directorios
+import sounddevice as sd                                                # Para grabar archivos de audio
+from manejoArchivos import guardarCSV, guardarUltimaFila, moverAudio    # Para escribir en archivos csv
+from graficar import mostrarDatosAudios
 
 np.set_printoptions(suppress=True)  # Para que numpy no use notación científica
 
@@ -19,6 +20,7 @@ def eliminarSilencios(audio):
 
 def filtrarAudio(audio, coef_preenfasis):
     audio = np.squeeze(audio) # Para transformar matriz columna (N, 1) en vector (N,)
+    print(audio.shape)
     filtrado = librosa.effects.preemphasis(audio, coef=coef_preenfasis)
     return filtrado
 
@@ -82,9 +84,15 @@ def procesarBaseDatosAudios():
         elementos = sorted(elementos, key=lambda x: int(x.split(vegetales[i])[-1].split('.')[0]))
 
         for j in range(len(elementos)):
-            actual = procesarAudio('Audios/' + vegetales[i] + '/' + elementos[j])
-            mfccs = np.vstack((mfccs, extraerMfcc(actual)))
-            zcr = np.vstack((zcr, extraerZCR(actual) * 10))
+            print(f"Procesando {elementos[j]}")
+
+            audio, sr = librosa.load('Audios/' + vegetales[i] + '/' + elementos[j])
+            procesado = procesarAudio(audio)
+
+            mfccs = np.vstack((mfccs, extraerMfcc(procesado)))
+
+            zcr = np.vstack((zcr, extraerZCR(procesado) * 10))
+
             etiqueta = np.vstack((etiqueta, np.array(i)))
             nombre = np.vstack((nombre, np.array(vegetales[i]+str(j))))
 
@@ -104,6 +112,18 @@ def procesarNuevo(audio):
 
     return caracteristicas
 
+def grabarAudio():
+    seguir = input("Presione ENTER para grabar...")
+    buffer = sd.rec(int(1.5 * 48000), samplerate=48000, channels=1)  # Para eliminar curva rara al encender microfono para grabar
+    sd.wait()
+
+    print("Grabando...")
+
+    audio = sd.rec(int(3 * 48000), samplerate=48000, channels=1)
+    sd.wait()
+    print("Grabacion finalizada...")
+    return audio
+
 if __name__ == '__main__':
     procesarBaseDatosAudios()
-    mostrarDatos()
+    #mostrarDatos()

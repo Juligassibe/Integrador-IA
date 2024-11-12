@@ -14,7 +14,7 @@ def guardarUltimaFila(nuevo, ruta):
     with open(ruta, 'a') as f:
         csv.writer(f).writerows([nuevo])
 
-def leerCSV(ruta):
+def leerCSVAudios(ruta):
     datos = np.genfromtxt(ruta, delimiter=',', dtype=None, names=('x', 'y', 'z', 'label', 'name'))
     x = datos['x'].astype(float).tolist()
     y = datos['y'].astype(float).tolist()
@@ -22,6 +22,21 @@ def leerCSV(ruta):
     etiqueta = datos['label'].astype(int).tolist()
     nombre = datos['name'].astype(str).tolist()
     return x, y, z, etiqueta, nombre
+
+def leerCSVImagenes(ruta, clasificados = True):
+    if clasificados:
+        datos = np.genfromtxt(ruta, delimiter=',', dtype=None, names=('x', 'y', 'z', 'etiqueta'))
+        x = datos['x'].astype(float).tolist()
+        y = datos['y'].astype(float).tolist()
+        z = datos['z'].astype(float).tolist()
+        etiqueta = datos['etiqueta'].astype(int).tolist()
+        return x, y, z, etiqueta
+    else:
+        datos = np.genfromtxt(ruta, delimiter=',', dtype=None, names=('x', 'y', 'z'))
+        x = datos['x'].astype(float).tolist()
+        y = datos['y'].astype(float).tolist()
+        z = datos['z'].astype(float).tolist()
+        return x, y, z
 
 #--------------------------------------------------------AUDIOS--------------------------------------------------------#
 
