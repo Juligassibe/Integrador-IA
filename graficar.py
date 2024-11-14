@@ -31,9 +31,14 @@ def mostrarDatosAudios(ruta, nuevo = False, xn = 0, yn = 0, zn = 0, etiquetaN = 
 
     plt.show()
 
-def mostrarDatosImagenes(ruta):
+def mostrarDatosImagenes(ruta, coordenadas = []):
     if 'clasificados' in ruta:
         x, y, z, etiqueta = leerCSVImagenes(ruta)
+        if len(coordenadas) != 0:
+            x.extend(coordenadas[:, 0])
+            y.extend(coordenadas[:, 1])
+            z.extend(coordenadas[:, 2])
+            etiqueta.extend([4, 4, 4, 4])
     else:
         x, y, z = leerCSVImagenes(ruta, False)
 
@@ -42,7 +47,7 @@ def mostrarDatosImagenes(ruta):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    colores = ['violet', 'red', 'brown', 'orange']
+    colores = ['violet', 'red', 'brown', 'orange', 'blue']
     if 'clasificados' in ruta:
         coloresPuntos = [colores[e] for e in etiqueta]
         scatter = ax.scatter(x, y, z, c=coloresPuntos)

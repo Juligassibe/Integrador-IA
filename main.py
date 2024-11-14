@@ -1,6 +1,7 @@
 from knn import agregarBaseDatosAudios, analizarAudio
-from kmeans import calculoCentroides
+from kmeans import calculoCentroides, kmeans
 from procesadoImagenes import procesarBaseDatosImagenes
+import cv2
 
 def main():
     while True:
@@ -22,9 +23,16 @@ def main():
             agregarBaseDatosAudios()
 
         elif opcion == "3":
-            print("kmeans")
+            kmeans()
 
-            analizarAudio()
+            prediccion = analizarAudio()
+
+            imagen = cv2.imread(f"Temp/Imagenes/{prediccion}.jpg")
+            cv2.namedWindow(f"{prediccion}", cv2.WINDOW_NORMAL)
+            cv2.resizeWindow(f"{prediccion}", 600, 600)
+            cv2.imshow(f"{prediccion}", imagen)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
         elif opcion == "4":
             break

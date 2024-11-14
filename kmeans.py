@@ -1,7 +1,8 @@
 import numpy as np
+import os
 from manejoArchivos import leerCSVImagenes, guardarCSV
 from graficar import mostrarDatosImagenes
-
+from procesadoImagenes import colorMedio
 
 def calculoCentroides(nClusters = 4, tolerancia = 3):
     # Obtengo puntos sin clasificar
@@ -58,18 +59,44 @@ def calculoCentroides(nClusters = 4, tolerancia = 3):
         centroides = temp
 
 def kmeans():
+    # Obtengo los centroides calculados previamente
     centroides = np.empty((4, 3))
-    xc, yc, zc = leerCSVImagenes('Resultados/Imagenes/centroides.csv')              # Extraigo centroides de csv
+    xc, yc, zc = leerCSVImagenes('Resultados/Imagenes/centroides.csv', False)   # Extraigo centroides de csv
     centroides[:, 0] = np.array(xc)
     centroides[:, 1] = np.array(yc)
     centroides[:, 2] = np.array(zc)
 
-    # Ya esta hecho el calculo de centroides y el etiquetado, solo queda abrir imagenes de Temp/Imagenes, procesarlas y etiquetarlas
-    # con los centroides calculados previamente
+    # Imagenes a clasificar
+    lista = [f for f in os.listdir('Temp/Imagenes/') if not f.startswith('.')]
+
+    # Calculo los parámetros que las describen
+    coordenadas = np.empty((0, 3))
+    for imagen in lista:
+        coordenadas = np.vstack((coordenadas, colorMedio(f"Temp/Imagenes/{imagen}")))
+
+    # Verifico a que grupo pertenecen y las etiqueto
+    etiquetas = []
+    for coordenada in coordenadas:
+        distancias = []
+        for centroide in centroides:
+            distancias.append(np.linalg.norm(centroide - coordenada))
+        etiquetas.append(np.argmin(distancias))
+
+    # Las renombro para identificarlas
+    for i in range(len(lista)):
+        if etiquetas[i] == 0:
+            os.rename(f"Temp/Imagenes/{lista[i]}", f"Temp/Imagenes/berenjena.jpg")
+        elif etiquetas[i] == 1:
+            os.rename(f"Temp/Imagenes/{lista[i]}", f"Temp/Imagenes/camote.jpg")
+        elif etiquetas[i] == 2:
+            os.rename(f"Temp/Imagenes/{lista[i]}", f"Temp/Imagenes/papa.jpg")
+        else:
+            os.rename(f"Temp/Imagenes/{lista[i]}", f"Temp/Imagenes/zanahoria.jpg")
+    # Mostrar posiciones de imagenes nuevas con las de la base de datos
+    mostrarDatosImagenes('Resultados/Imagenes/puntos clasificados.csv', coordenadas)
 
 def main():
-    calculoCentroides()
-    mostrarDatosImagenes('Resultados/Imagenes/puntos imagenes.csv')
+    kmeans()
 
 if __name__ == '__main__':
     main()

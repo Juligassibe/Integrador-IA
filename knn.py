@@ -26,6 +26,7 @@ def knn(audioNuevo):
     distancias = np.column_stack((distancias, np.array(etiqueta)))
     ordenados = distancias[np.argsort(distancias[:, 0])]
 
+    # Cuento dentro de los 5 vecinos mas cercanos cuantos pertenecen a cada grupo
     contador = [0, 0, 0, 0]
 
     for i in range(nroVecinos):
@@ -38,6 +39,7 @@ def knn(audioNuevo):
         else:
             contador[3]+= 1
 
+    # Obtengo el indice que tiene el contador mayor, es decir el grupo con mas vecinos al punto nuevo
     indice = contador.index(max(contador))
 
     if indice == 0:
@@ -65,6 +67,7 @@ def agregarBaseDatosAudios():
         else:
             print("Opción no válida.")
 
+    # Clasifico el audio nuevo y verifico si la predicción es correcta antes de agregarlo a la base de datos
     prediccion, coordenadas = knn(audioNuevo)
 
     print(f"Prediccion: {prediccion}")
@@ -104,6 +107,8 @@ def analizarAudio():
 
     print(f"La predicción es: {prediccion}")
     mostrarDatosAudios('Resultados/Audios/Puntos.csv', True, coordenadas[0], coordenadas[1], coordenadas[2], 4.0, 'nuevo')
+
+    return prediccion
 
 def main():
     y, sr = librosa.load('Temp/Audios/clasificar0.wav', sr=None)

@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 from manejoArchivos import guardarCSV
-from graficar import mostrarDatosAudios
+from graficar import mostrarDatosImagenes
 
 def procesadoImagen(imagenGris):
     # Ajustar el contraste y el brillo de la imagen en escala de grises
@@ -102,7 +102,7 @@ def procesarBaseDatosImagenes():
             medio = np.vstack((medio, temp))
 
     guardarCSV(medio, 'Resultados/Imagenes/puntos imagenes.csv')
-    #mostrarDatosAudios('Resultados/Imagenes/puntos imagenes.csv')
+    mostrarDatosImagenes('Resultados/Imagenes/puntos clasificados.csv')
 
 if __name__ == "__main__":
     procesarBaseDatosImagenes()

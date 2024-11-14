@@ -20,7 +20,6 @@ def eliminarSilencios(audio):
 
 def filtrarAudio(audio, coef_preenfasis):
     audio = np.squeeze(audio) # Para transformar matriz columna (N, 1) en vector (N,)
-    print(audio.shape)
     filtrado = librosa.effects.preemphasis(audio, coef=coef_preenfasis)
     return filtrado
 
@@ -71,37 +70,6 @@ def extraerZCR(audio):
 
 #----------------------------------------------------------------------------------------------------------------------#
 
-def procesarBaseDatosAudios():
-    vegetales = ['berenjena', 'camote', 'papa', 'zanahoria']
-
-    etiqueta = np.empty((0, 1))
-    nombre = np.empty((0, 1))
-    mfccs = np.empty((0, nroMfccs))
-    zcr = np.empty((0, 1))
-
-    for i in range(len(vegetales)):
-        elementos = [f for f in os.listdir('Audios/' + vegetales[i] + '/') if not f.startswith('.')]
-        elementos = sorted(elementos, key=lambda x: int(x.split(vegetales[i])[-1].split('.')[0]))
-
-        for j in range(len(elementos)):
-            print(f"Procesando {elementos[j]}")
-
-            audio, sr = librosa.load('Audios/' + vegetales[i] + '/' + elementos[j])
-            procesado = procesarAudio(audio)
-
-            mfccs = np.vstack((mfccs, extraerMfcc(procesado)))
-
-            zcr = np.vstack((zcr, extraerZCR(procesado) * 10))
-
-            etiqueta = np.vstack((etiqueta, np.array(i)))
-            nombre = np.vstack((nombre, np.array(vegetales[i]+str(j))))
-
-    caracteristicas = np.array([mfccs[:, 4], mfccs[:, 5]]).T
-    caracteristicas = np.append(caracteristicas, zcr, axis=1)
-    caracteristicas = np.append(caracteristicas, etiqueta, axis=1)
-    caracteristicas = np.append(caracteristicas, nombre, axis=1)
-    guardarCSV(caracteristicas, 'Resultados/Audios/Puntos.csv')
-
 def procesarNuevo(audio):
     procesado = procesarAudio(audio)
 
@@ -123,7 +91,3 @@ def grabarAudio():
     sd.wait()
     print("Grabacion finalizada...")
     return audio
-
-if __name__ == '__main__':
-    procesarBaseDatosAudios()
-    #mostrarDatos()
